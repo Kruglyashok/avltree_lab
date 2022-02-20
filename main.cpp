@@ -5,7 +5,7 @@
 int main()
 {
 	AVLTree tree{};
-
+	tree.display();
 	std::cout << "asd";
 	return 0;
 }

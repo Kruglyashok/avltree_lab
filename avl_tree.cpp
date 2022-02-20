@@ -7,32 +7,32 @@ int max(int a, int b)
     return (a > b ? a : b);
 }
 
-Node* AVLTree::insert(int x, Node* t)
+Node* AVLTree::insert(Record x, Node* t)
 {
     if (t == nullptr)
     {
         t = new Node;
-        t->data = x;
+        t->rec = x;
         t->height = 0;
         t->left = t->right = nullptr;
     }
-    else if (x < t->data)
+    else if (x < t->rec)
     {
         t->left = insert(x, t->left);
         if (height(t->left) - height(t->right) == 2)
         {
-            if (x < t->left->data)
+            if (x < t->left->rec)
                 t = singleRightRotate(t);
             else
                 t = doubleRightRotate(t);
         }
     }
-    else if (x >= t->data)
+    else if (x >= t->rec)
     {
         t->right = insert(x, t->right);
         if (height(t->right) - height(t->left) == 2)
         {
-            if (x >= t->right->data)
+            if (x >= t->right->rec)
                 t = singleLeftRotate(t);
             else
                 t = doubleLeftRotate(t);
@@ -182,7 +182,7 @@ void AVLTree::inorder(Node* t)
     if (t == nullptr)
         return;
     inorder(t->left);
-    std::cout << t->data << " ";
+    std::cout << t->rec.year << " ";
     inorder(t->right);
 }
 
@@ -209,11 +209,12 @@ AVLTree::AVLTree()
         std::cout << "\nyear = " << rec.year << std::endl;
         std::cout << "\npages = " << rec.pages << std::endl;
         std::cout << std::endl;
+        this->insert(rec);
     }
     ifs.close();
 }
 
-void AVLTree::insert(int x)
+void AVLTree::insert(Record x)
 {
     root = insert(x, root);
 }

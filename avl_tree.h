@@ -16,7 +16,16 @@ typedef struct Record
     char *title = new char[title_len];
     uint16_t year = 0U;
     uint16_t pages = 0U;
+
 } Record;
+
+inline bool operator<(const Record& lhs, const Record& rhs)
+{
+    return lhs.year < rhs.year;
+}
+inline bool operator> (const Record& lhs, const Record& rhs) { return rhs < lhs; }
+inline bool operator<=(const Record& lhs, const Record& rhs) { return !(lhs > rhs); }
+inline bool operator>=(const Record& lhs, const Record& rhs) { return !(lhs < rhs); }
 
 typedef struct Node
 {
@@ -34,7 +43,7 @@ class AVLTree
     Node* root = nullptr;
 
     void makeEmpty(Node*);
-    Node* insert(int, Node*);
+    Node* insert(Record, Node*);
     Node* singleRightRotate(Node*&);
     Node* singleLeftRotate(Node*&);
     Node* doubleLeftRotate(Node*&);
@@ -48,7 +57,7 @@ class AVLTree
 
 public:
     AVLTree();
-    void insert(int);
+    void insert(Record);
     void remove(int);
     void display();
 };
