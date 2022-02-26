@@ -1,195 +1,137 @@
 #pragma once
 #include "avl_tree.h"
 #include <locale>
+#include <cassert>
 
 int max(int a, int b)
 {
     return (a > b ? a : b);
 }
 
-Node* AVLTree::insert(Record x, Node* t)
+Node* AVLTree::insert(Record x, Node* node)
 {
-    if (t == nullptr)
+    if (node == nullptr)
     {
-        t = new Node;
-        t->rec = x;
-        t->height = 0;
-        t->left = t->right = nullptr;
+        node = new Node;
+        node->rec = x;
+        node->height = 0;
+        node->left = node->right = nullptr;
     }
-    else if (x < t->rec)
+    else if (x < node->rec)
     {
-        t->left = insert(x, t->left);
-        if (height(t->left) - height(t->right) == 2)
+        node->left = insert(x, node->left);
+        if (height(node->left) - height(node->right) == 2)
         {
-            if (x < t->left->rec)
-                t = singleRightRotate(t);
+            if (x < node->left->rec)
+                node = singleRightRotate(node);
             else
-                t = doubleRightRotate(t);
+                node = doubleRightRotate(node);
         }
     }
-    else if (x >= t->rec)
+    else if (x >= node->rec)
     {
-        t->right = insert(x, t->right);
-        if (height(t->right) - height(t->left) == 2)
+        node->right = insert(x, node->right);
+        if (height(node->right) - height(node->left) == 2)
         {
-            if (x >= t->right->rec)
-                t = singleLeftRotate(t);
+            if (x >= node->right->rec)
+                node = singleLeftRotate(node);
             else
-                t = doubleLeftRotate(t);
+                node = doubleLeftRotate(node);
         }
     }
 
-    t->height = max(height(t->left), height(t->right)) + 1;
-    return t;
+    node->height = max(height(node->left), height(node->right)) + 1;
+    return node;
 }
 
-void AVLTree::makeEmpty(Node* t)
+void AVLTree::makeEmpty(Node* node)
 {
-    if (t == nullptr) return;
-    makeEmpty(t->left);
-    makeEmpty(t->right);
-    delete t;
+    if (node == nullptr) return;
+    makeEmpty(node->left);
+    makeEmpty(node->right);
+    delete node;
 }
 
-Node* AVLTree::singleRightRotate(Node*& t)
+Node* AVLTree::singleRightRotate(Node*& node)
 {
-    Node* u = t->left;
-    t->left = u->right;
-    u->right = t;
-    t->height = max(height(t->left), height(t->right)) + 1;
-    u->height = max(height(u->left), t->height) + 1;
+    Node* u = node->left;
+    node->left = u->right;
+    u->right = node;
+    node->height = max(height(node->left), height(node->right)) + 1;
+    u->height = max(height(u->left), node->height) + 1;
     return u;
 }
 
-Node* AVLTree::singleLeftRotate(Node*& t)
+Node* AVLTree::singleLeftRotate(Node*& node)
 {
-    Node* u = t->right;
-    t->right = u->left;
-    u->left = t;
-    t->height = max(height(t->left), height(t->right)) + 1;
-    u->height = max(height(t->right), t->height) + 1;
+    Node* u = node->right;
+    node->right = u->left;
+    u->left = node;
+    node->height = max(height(node->left), height(node->right)) + 1;
+    u->height = max(height(node->right), node->height) + 1;
     return u;
 }
 
-Node* AVLTree::doubleLeftRotate(Node*& t)
+Node* AVLTree::doubleLeftRotate(Node*& node)
 {
-    t->right = singleRightRotate(t->right);
-    return singleLeftRotate(t);
+    node->right = singleRightRotate(node->right);
+    return singleLeftRotate(node);
 }
 
-Node* AVLTree::doubleRightRotate(Node*& t)
+Node* AVLTree::doubleRightRotate(Node*& node)
 {
-    t->left = singleLeftRotate(t->left);
-    return singleRightRotate(t);
+    node->left = singleLeftRotate(node->left);
+    return singleRightRotate(node);
 }
 
-Node* AVLTree::findMin(Node* t)
+Node* AVLTree::findMin(Node* node)
 {
-    if (t == nullptr)
+    if (node == nullptr)
         return nullptr;
-    else if (t->left == nullptr)
-        return t;
+    else if (node->left == nullptr)
+        return node;
     else
-        return findMin(t->left);
+        return findMin(node->left);
 }
 
-Node* AVLTree::findMax(Node* t)
+Node* AVLTree::findMax(Node* node)
 {
-    if (t == nullptr)
+    if (node == nullptr)
         return nullptr;
-    else if (t->right == nullptr)
-        return t;
+    else if (node->right == nullptr)
+        return node;
     else
-        return findMax(t->right);
+        return findMax(node->right);
 }
 
-Node* AVLTree::remove(int x, Node* t)
+int AVLTree::height(Node* node)
 {
-    Node* temp;
-
-    // Element not found
-    if (t == nullptr)
-        return nullptr;
-
-    // Searching for element
-    else if (x < t->data)
-        t->left = remove(x, t->left);
-    else if (x > t->data)
-        t->right = remove(x, t->right);
-
-    // Element found
-    // With 2 children
-    else if (t->left && t->right)
-    {
-        temp = findMin(t->right);
-        t->data = temp->data;
-        t->right = remove(t->data, t->right);
-    }
-    // With one or zero child
-    else
-    {
-        temp = t;
-        if (t->left == nullptr)
-            t = t->right;
-        else if (t->right == nullptr)
-            t = t->left;
-        delete temp;
-    }
-    if (t == nullptr)
-        return t;
-
-    t->height = max(height(t->left), height(t->right)) + 1;
-
-    // If Node is unbalanced
-    // If left Node is deleted, right case
-    if (height(t->left) - height(t->right) == 2)
-    {
-        // right right case
-        if (height(t->left->left) - height(t->left->right) == 1)
-            return singleLeftRotate(t);
-        // right left case
-        else
-            return doubleLeftRotate(t);
-    }
-    // If right Node is deleted, left case
-    else if (height(t->right) - height(t->left) == 2)
-    {
-        // left left case
-        if (height(t->right->right) - height(t->right->left) == 1)
-            return singleRightRotate(t);
-        // left right case
-        else
-            return doubleRightRotate(t);
-    }
-    return t;
+    return (node == nullptr ? -1 : node->height);
 }
 
-int AVLTree::height(Node* t)
+int AVLTree::getBalance(Node* node)
 {
-    return (t == nullptr ? -1 : t->height);
-}
-
-int AVLTree::getBalance(Node* t)
-{
-    if (t == nullptr)
+    if (node == nullptr)
         return 0;
     else
-        return height(t->left) - height(t->right);
+        return height(node->left) - height(node->right);
 }
 
-void AVLTree::inorder(Node* t)
+void AVLTree::inorder(Node* node)
 {
-    if (t == nullptr)
+    if (node == nullptr)
         return;
-    inorder(t->left);
-    std::cout << t->rec.year << " ";
-    inorder(t->right);
+    std::cout << node->rec.auth << " " << node->rec.name << " "
+        << node->rec.title << " " << node->rec.year << " " << node->rec.pages << std::endl;
+    inorder(node->left);
+    inorder(node->right);
 }
 
-AVLTree::AVLTree()
+AVLTree::AVLTree(std::string filename)
 { 
     root = nullptr;
-    std::ifstream ifs("BASE1.dat", std::ios::in | std::ios::binary);
+    std::ifstream ifs(filename, std::ios::in | std::ios::binary);
+    assert(ifs.is_open());
     Record rec{};
     ifs.seekg(0, ifs.end);
     auto endfile = ifs.tellg();
@@ -201,14 +143,6 @@ AVLTree::AVLTree()
         ifs.read(rec.title, sizeof(char) * title_len);
         ifs.read((char*)(&rec.year), sizeof(uint16_t));
         ifs.read((char*)(&rec.pages), sizeof(uint16_t));
-
-        std::cout << std::endl;
-        printf("auth === %s_\n", rec.auth);
-        printf("name === %s_\n", rec.name);
-        printf("title === %s_\n", rec.title);
-        std::cout << "\nyear = " << rec.year << std::endl;
-        std::cout << "\npages = " << rec.pages << std::endl;
-        std::cout << std::endl;
         this->insert(rec);
     }
     ifs.close();
@@ -219,13 +153,61 @@ void AVLTree::insert(Record x)
     root = insert(x, root);
 }
 
-void AVLTree::remove(int x)
-{
-    root = remove(x, root);
-}
-
 void AVLTree::display()
 {
     inorder(root);
     std::cout << std::endl;
+}
+
+void AVLTree::getRecByYear(Node* node, uint16_t from, uint16_t to, std::vector<Record>& results, std::string& publisher)
+{
+    if (node == nullptr)
+        return;
+
+    if (node->rec.year >= from && node->rec.year <= to && node->rec.title == publisher)
+    {
+        results.push_back(node->rec);
+    }
+    getRecByYear(node->left, from, to, results, publisher);
+    getRecByYear(node->right, from, to, results, publisher);
+}
+
+
+
+
+std::vector<Record> AVLTree::getRecByYear(uint16_t from, uint16_t to, std::string& publisher)
+{
+    std::vector<Record> results{};
+    if (from > to)
+    {
+        uint16_t tmp = to;
+        to = from;
+        from = tmp;
+    }
+    getRecByYear(root, from, to, results, publisher);
+    std::sort(results.begin(), results.end());
+    std::cout << "\nresults found : " << results.size() << std::endl;
+    return results;
+}
+
+void AVLTree::getPublishers(Node* node, std::unordered_map<std::string, int> &map)
+{
+    if (node == nullptr) return;
+    if (map.find(node->rec.title) == map.end())
+    {
+        map.insert(std::pair<std::string, int>(node->rec.title, 1));
+    }
+    else
+    {
+        map[node->rec.title]++;
+    }
+    getPublishers(node->left, map);
+    getPublishers(node->right, map);
+}
+
+std::unordered_map<std::string, int> AVLTree::getPublishers()
+{
+    std::unordered_map<std::string, int> map{};
+    getPublishers(root, map);
+    return map;
 }
